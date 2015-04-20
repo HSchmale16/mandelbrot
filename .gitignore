@@ -31,3 +31,4 @@ bin/*
 build/*
 mandel
 out/*
+.release_time

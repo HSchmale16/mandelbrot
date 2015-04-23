@@ -66,8 +66,8 @@ inline double map(double x, double in_min, double in_max,
 
 
 pixel mandelbrot(double x, double y, double zfactor){
-    x = XMIN + map(x, 0, SCR_WDTH, 0, DX) * zfactor;
-    y = YMIN + map(y, 0, SCR_HGHT, 0, DY) * zfactor;
+    x = XMIN + map(x, 0, SCR_WDTH, 0, DX) * zfactor + (DX/2.0)*zfactor;
+    y = YMIN + map(y, 0, SCR_HGHT, 0, DY) * zfactor + (DY/2.0)*zfactor;
 
     std::complex<double> c(x, y);
     std::complex<double> z = 0;

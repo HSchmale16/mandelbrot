@@ -6,6 +6,19 @@
 
 using namespace cimg_library;
 
+const int SCR_WDTH = 1920;    //!< Width of the image generated
+const int SCR_HGHT = 1080;    //!< Height of the image generated
+const int SCR_CD   = 32;      //!< Bits of Color Depth of the screen
+const int ITERATS  = 1000;    //!< Total Number of frames to calculate
+const double XMIN  = -1.400;
+const double XMAX  = -1.200;
+const double DX    = XMAX - XMIN;
+const double YMIN  = -0.100;
+const double YMAX  = 0.100;
+const double DY    = XMAX - XMIN;
+
+CImg<uint8_t> img(SCR_WDTH, SCR_HGTH, 1, 3);
+
 struct pixel{
     uint8_t r;
     uint8_t g;
@@ -33,12 +46,6 @@ struct thread_data{
     double x;
 };
 
-CImg<uint8_t> img(1920, 1080, 1, 3);
-const int SCR_WDTH = 1920;
-const int SCR_HGHT = 1080;
-const int SCR_CD   = 32;
-const int ITERATS  = 1000;
-
 pixel colorTable[256];
 void generateColorTable(){
     srand(time(0));
@@ -49,9 +56,14 @@ void generateColorTable(){
     }
 }
 
+inline double map(double x, double in_min, double in_max, double out_min, double out_max)
+{
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
 pixel mandelbrot(double x, double y, double zfactor){
-    x = (-(SCR_WDTH/6) + x/(SCR_WDTH-1.0)*SCR_WDTH) * zfactor;
-    y = (-(SCR_HGHT/8) + y/(SCR_HGHT-1.0)*SCR_HGHT) * zfactor;
+    x = XMIN + (map(x, 0, SCR_WDTH, XMIN, XMAX) * zfactor + DX * zfactor);
+    y = YMIN + (map(y, 0, SCR_HGTH, YMIN, YMAX) * zfactor + DY * zfactor);
 
     std::complex<double> c(x, y);
     std::complex<double> z = 0;

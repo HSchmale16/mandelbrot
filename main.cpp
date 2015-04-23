@@ -9,12 +9,13 @@ using namespace cimg_library;
 const int    SCR_WDTH = 1920;    //!< Width of the image generated
 const int    SCR_HGHT = 1080;    //!< Height of the image generated
 const int    SCR_CD   = 32;      //!< Bits of Color Depth of the screen
-const int    ITERATS  = 1000;    //!< Total Number of frames to calculate
-const double XMIN     = -2.000;
-const double XMAX     =  2.000;
+const int    FRAMES   = 1000;    //!< Total Number of frames to calculate
+const int    MAX_ITER = 256;     //!< Maximum number of iter for mandelbrot
+const double XMIN     = -1.490;
+const double XMAX     = -1.290;
 const double DX       = XMAX - XMIN;
-const double YMIN     = -1.300;
-const double YMAX     =  1.300;
+const double YMIN     = -(DX * ((double)SCR_HGHT/SCR_WDTH));
+const double YMAX     = -YMIN;
 const double DY       = XMAX - XMIN;
 const double ITER_SCL = .95;     //!< Scale Value Multiplier Each Iteration
 
@@ -59,7 +60,8 @@ void generateColorTable(){
 
 inline double map(double x, double in_min, double in_max, 
                   double out_min, double out_max){
-    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    return (x - in_min) * (out_max - out_min) / 
+           (in_max - in_min) + out_min;
 }
 
 
@@ -72,10 +74,10 @@ pixel mandelbrot(double x, double y, double zfactor){
     unsigned int iters;
     int n = 0;
 
-    for(iters = 0; iters < ITERATS && std::abs(z) < 2.0; ++iters) 
+    for(iters = 0; iters < MAX_ITER && std::abs(z) < 2.0; ++iters) 
         z = z*z + c;
 
-    n = (iters == ITERATS) ? 1 : iters;
+    n = (iters == MAX_ITER) ? 1 : iters;
     return colorTable[n % 256];
 }
 
@@ -100,7 +102,10 @@ int main(){
     int rc, x;
 
     generateColorTable();
-    for(int i = 0; i < ITERATS; i++){
+    printf("Images are %dpx by %dpx\n", SCR_WDTH, SCR_HGHT);
+    printf("X = (%.3f, %.3f)\n", XMIN, XMAX);
+    printf("Y = (%.3f, %.3f)\n", YMIN, YMAX);
+    for(int i = 0; i < FRAMES; i++){
         for(x = 0; x < SCR_WDTH; x++){
             data[x].scale = scaleFactor;
             data[x].x     = x;
@@ -117,7 +122,7 @@ int main(){
         scaleFactor *= ITER_SCL;
         // Save the image for compositing later
         char fname[50];
-        snprintf(fname, 50, "out/frame%d.jpg", i);
+        snprintf(fname, 50, "out/frame%03d.jpg", i);
         img.save_other(fname);
     }
 }

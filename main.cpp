@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <CImg.h>
 #include <pthread.h>
+#include <gmp.h>
+#include <gmpxx.h>
 
 using namespace cimg_library;
 
@@ -12,13 +14,13 @@ using namespace cimg_library;
 const int    SCR_WDTH = 1920;    //!< Width of the image generated
 const int    SCR_HGHT = 1080;    //!< Height of the image generated
 const int    SCR_CD   = 32;      //!< Bits of Color Depth of the screen
-const int    FRAMES   = 1000;    //!< Total Number of frames to calculate
+const int    FRAMES   = 4000;    //!< Total Number of frames to calculate
 const int    MAX_ITER = 256;     //!< Maximum number of iter for mandelbrot
 double       XMIN     = -1.438;
 double       XMAX     = -1.400;
 double       YMIN     = -(DX * ((double)SCR_HGHT/SCR_WDTH));
 double       YMAX     = -YMIN;
-double       ITER_SCL = .95;     //!< Scale Value Multiplier Each Iteration
+double       ITER_SCL = .99999999999;
 
 CImg<uint8_t> img(SCR_WDTH, SCR_HGHT, 1, 3);
 
@@ -94,10 +96,10 @@ void* rendThrPt(void *d){
 }
 
 int main(){
-    static double      scaleFactor = .99;
     static pthread_t   threads[SCR_WDTH];
     static thread_data data[SCR_WDTH];
     int rc, x;
+    double scale;
 
     generateColorTable();
     printf("Images are %dpx by %dpx\n", SCR_WDTH, SCR_HGHT);
@@ -115,15 +117,15 @@ int main(){
         for(x = 0; x < SCR_WDTH; x++){
             pthread_join(threads[x], NULL);
         }
-        printf("(%3d)scale=%.2f  ", i, scaleFactor);
-        printf("(%.5f, %.5f)-(%.5f, %.5f)  ", XMIN, YMIN, XMAX, YMAX);
-        printf("(%.5f)(%.5f)\n", XMAX - XMIN, YMAX - YMIN);
-        
-        //scaleFactor *= ITER_SCL;
-        XMIN = XMIN + (DX*scaleFactor) / 2.0;
-        XMAX = XMAX - (DX*scaleFactor) / 2.0;
-        YMIN = YMIN + (DY*scaleFactor) / 2.0;
-        YMAX = YMAX - (DY*scaleFactor) / 2.0;
+        printf("(%6d)s=%.5f  (%.5f, %.5f)-(%.5f, %.5f)  (%.5f)(%.5f)\n",
+               i, scale, XMIN, YMIN, XMAX, YMAX,
+               XMAX - XMIN, YMAX - YMIN);
+        //ITER_SCL *= ITER_SCL;
+        scale = ((DX*ITER_SCL) / 16.0);
+        XMIN = XMIN + scale;
+        XMAX = XMAX - scale;
+        YMIN = -(DX * ((double)SCR_HGHT/SCR_WDTH));
+        YMAX = -YMIN;
         // Save the image for compositing later
         char fname[50];
         snprintf(fname, 50, "out/frame%03d.jpg", i);

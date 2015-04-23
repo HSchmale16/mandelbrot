@@ -8,19 +8,19 @@ SRC_EXT = cpp
 # Path to the source directory, relative to the makefile
 SRC_PATH = .
 # Space-separated pkg-config libraries used by this project
-LIBS = 
+LIBS =  
 # General compiler flags
 COMPILE_FLAGS = -std=c++11 -Wall -Wextra -g
 # Additional release-specific flags
-RCOMPILE_FLAGS = -D NDEBUG -O2
+RCOMPILE_FLAGS = -D NDEBUG
 # Additional debug-specific flags
 DCOMPILE_FLAGS = -D DEBUG
 # Add additional include paths
 INCLUDES = -I $(SRC_PATH)/
 # General linker settings
-LINK_FLAGS = -lpthread -lm -lX11 
+LINK_FLAGS = -lpthread -lm -lX11 -lgmpxx -lgmp
 # Additional release-specific linker settings
-RLINK_FLAGS = 
+RLINK_FLAGS = -O2 
 # Additional debug-specific linker settings
 DLINK_FLAGS = 
 # Destination directory, like a jail or mounted system
@@ -48,7 +48,7 @@ ifneq ($(LIBS),)
 endif
 
 # Verbose option, to output compile and link commands
-export V := false
+export V := true
 export CMD_PREFIX := @
 ifeq ($(V),true)
 	CMD_PREFIX := 

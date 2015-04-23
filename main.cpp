@@ -6,18 +6,19 @@
 
 using namespace cimg_library;
 
-const int SCR_WDTH = 1920;    //!< Width of the image generated
-const int SCR_HGHT = 1080;    //!< Height of the image generated
-const int SCR_CD   = 32;      //!< Bits of Color Depth of the screen
-const int ITERATS  = 1000;    //!< Total Number of frames to calculate
-const double XMIN  = -1.400;
-const double XMAX  = -1.200;
-const double DX    = XMAX - XMIN;
-const double YMIN  = -0.100;
-const double YMAX  = 0.100;
-const double DY    = XMAX - XMIN;
+const int    SCR_WDTH = 1920;    //!< Width of the image generated
+const int    SCR_HGHT = 1080;    //!< Height of the image generated
+const int    SCR_CD   = 32;      //!< Bits of Color Depth of the screen
+const int    ITERATS  = 1000;    //!< Total Number of frames to calculate
+const double XMIN     = -2.000;
+const double XMAX     =  2.000;
+const double DX       = XMAX - XMIN;
+const double YMIN     = -1.300;
+const double YMAX     =  1.300;
+const double DY       = XMAX - XMIN;
+const double ITER_SCL = .95;     //!< Scale Value Multiplier Each Iteration
 
-CImg<uint8_t> img(SCR_WDTH, SCR_HGTH, 1, 3);
+CImg<uint8_t> img(SCR_WDTH, SCR_HGHT, 1, 3);
 
 struct pixel{
     uint8_t r;
@@ -56,14 +57,15 @@ void generateColorTable(){
     }
 }
 
-inline double map(double x, double in_min, double in_max, double out_min, double out_max)
-{
+inline double map(double x, double in_min, double in_max, 
+                  double out_min, double out_max){
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
+
 pixel mandelbrot(double x, double y, double zfactor){
-    x = XMIN + (map(x, 0, SCR_WDTH, XMIN, XMAX) * zfactor + DX * zfactor);
-    y = YMIN + (map(y, 0, SCR_HGTH, YMIN, YMAX) * zfactor + DY * zfactor);
+    x = XMIN + map(x, 0, SCR_WDTH, 0, DX) * zfactor;
+    y = YMIN + map(y, 0, SCR_HGHT, 0, DY) * zfactor;
 
     std::complex<double> c(x, y);
     std::complex<double> z = 0;
@@ -92,7 +94,7 @@ void* rendThrPt(void *d){
 }
 
 int main(){
-    static double      scaleFactor = 1.0 + 1.0 / ITERATS;
+    static double      scaleFactor = 1.0;
     static pthread_t   threads[SCR_WDTH];
     static thread_data data[SCR_WDTH];
     int rc, x;
@@ -112,7 +114,7 @@ int main(){
             pthread_join(threads[x], NULL);
         }
         printf("(%d) scale = %f\n", i, scaleFactor);
-        scaleFactor *= .9;
+        scaleFactor *= ITER_SCL;
         // Save the image for compositing later
         char fname[50];
         snprintf(fname, 50, "out/frame%d.jpg", i);

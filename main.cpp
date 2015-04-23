@@ -20,7 +20,7 @@ double       XMIN     = -1.438;
 double       XMAX     = -1.400;
 double       YMIN     = -(DX * ((double)SCR_HGHT/SCR_WDTH));
 double       YMAX     = -YMIN;
-double       ITER_SCL = .0001;
+double       ITER_SCL = .005;
 
 CImg<uint8_t> img(SCR_WDTH, SCR_HGHT, 1, 3);
 
@@ -117,11 +117,11 @@ int main(){
         for(x = 0; x < SCR_WDTH; x++){
             pthread_join(threads[x], NULL);
         }
-        printf("(%010d)s=%.5f  (%.5f, %.5f)-(%.5f, %.5f)  (%.5f)(%.5f)\n",
+        printf("(%010d) s=%.5f  (%.5f, %.5f)-(%.5f, %.5f)  (%.5f)(%.5f)\n",
                i, scale, XMIN, YMIN, XMAX, YMAX,
                XMAX - XMIN, YMAX - YMIN);
         //ITER_SCL *= ITER_SCL;
-        scale = ((DX*ITER_SCL) / 64.0);
+        scale = ((DX*ITER_SCL));
         XMIN = XMIN + scale;
         XMAX = XMAX - scale;
         YMIN = -(DX * ((double)SCR_HGHT/SCR_WDTH));

@@ -32,3 +32,9 @@ build/*
 mandel
 out*
 .release_time
+
+# Movie Files
+*.mp4
+*.avi
+*.mp3
+*.mpeg4

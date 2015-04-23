@@ -6,18 +6,19 @@
 
 using namespace cimg_library;
 
+#define DX (XMAX-XMIN)
+#define DY (YMAX-YMIN)
+
 const int    SCR_WDTH = 1920;    //!< Width of the image generated
 const int    SCR_HGHT = 1080;    //!< Height of the image generated
 const int    SCR_CD   = 32;      //!< Bits of Color Depth of the screen
 const int    FRAMES   = 1000;    //!< Total Number of frames to calculate
 const int    MAX_ITER = 256;     //!< Maximum number of iter for mandelbrot
-const double XMIN     = -1.490;
-const double XMAX     = -1.290;
-const double DX       = XMAX - XMIN;
-const double YMIN     = -(DX * ((double)SCR_HGHT/SCR_WDTH));
-const double YMAX     = -YMIN;
-const double DY       = XMAX - XMIN;
-const double ITER_SCL = .95;     //!< Scale Value Multiplier Each Iteration
+double       XMIN     = -1.438;
+double       XMAX     = -1.400;
+double       YMIN     = -(DX * ((double)SCR_HGHT/SCR_WDTH));
+double       YMAX     = -YMIN;
+double       ITER_SCL = .95;     //!< Scale Value Multiplier Each Iteration
 
 CImg<uint8_t> img(SCR_WDTH, SCR_HGHT, 1, 3);
 
@@ -44,7 +45,6 @@ struct pixel{
 };
 
 struct thread_data{
-    double scale;
     double x;
 };
 
@@ -59,15 +59,15 @@ void generateColorTable(){
 }
 
 inline double map(double x, double in_min, double in_max, 
-                  double out_min, double out_max){
+        double out_min, double out_max){
     return (x - in_min) * (out_max - out_min) / 
-           (in_max - in_min) + out_min;
+        (in_max - in_min) + out_min;
 }
 
 
-pixel mandelbrot(double x, double y, double zfactor){
-    x = XMIN + map(x, 0, SCR_WDTH, 0, DX) * zfactor + (DX/2.0)*zfactor;
-    y = YMIN + map(y, 0, SCR_HGHT, 0, DY) * zfactor + (DY/2.0)*zfactor;
+pixel mandelbrot(double x, double y){
+    x = map(x, 0, SCR_WDTH, XMIN, XMAX);
+    y = map(y, 0, SCR_HGHT, YMIN, YMAX);
 
     std::complex<double> c(x, y);
     std::complex<double> z = 0;
@@ -85,9 +85,7 @@ void* rendThrPt(void *d){
     thread_data *md;
     md = (thread_data*) d;
     for(int y = 0; y < SCR_HGHT; y++){
-        pixel p = mandelbrot((double)md->x, 
-                (double)y,
-                md->scale);
+        pixel p = mandelbrot((double)md->x, (double)y);
         img(md->x, y, 0, 0) = p.r;
         img(md->x, y, 0, 1) = p.g;
         img(md->x, y, 0, 2) = p.b;
@@ -96,7 +94,7 @@ void* rendThrPt(void *d){
 }
 
 int main(){
-    static double      scaleFactor = 1.0;
+    static double      scaleFactor = .99;
     static pthread_t   threads[SCR_WDTH];
     static thread_data data[SCR_WDTH];
     int rc, x;
@@ -107,7 +105,6 @@ int main(){
     printf("Y = (%.3f, %.3f)\n", YMIN, YMAX);
     for(int i = 0; i < FRAMES; i++){
         for(x = 0; x < SCR_WDTH; x++){
-            data[x].scale = scaleFactor;
             data[x].x     = x;
             rc = pthread_create(&threads[x], NULL, rendThrPt, 
                     (void*)&data[x]);
@@ -118,8 +115,15 @@ int main(){
         for(x = 0; x < SCR_WDTH; x++){
             pthread_join(threads[x], NULL);
         }
-        printf("(%d) scale = %f\n", i, scaleFactor);
-        scaleFactor *= ITER_SCL;
+        printf("(%3d)scale=%.2f  ", i, scaleFactor);
+        printf("(%.5f, %.5f)-(%.5f, %.5f)  ", XMIN, YMIN, XMAX, YMAX);
+        printf("(%.5f)(%.5f)\n", XMAX - XMIN, YMAX - YMIN);
+        
+        //scaleFactor *= ITER_SCL;
+        XMIN = XMIN + (DX*scaleFactor) / 2.0;
+        XMAX = XMAX - (DX*scaleFactor) / 2.0;
+        YMIN = YMIN + (DY*scaleFactor) / 2.0;
+        YMAX = YMAX - (DY*scaleFactor) / 2.0;
         // Save the image for compositing later
         char fname[50];
         snprintf(fname, 50, "out/frame%03d.jpg", i);

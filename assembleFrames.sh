@@ -3,4 +3,4 @@
 # Henry Schmale
 # April 23, 2015
 
-ffmpeg -framerate 2 -i 'out/frame%03d.jpg' -c:v libx264 out.mp4
+ffmpeg -framerate 10 -i 'out/frame%03d.jpg' -c:v libx264 out.mp4

@@ -14,13 +14,13 @@ using namespace cimg_library;
 const int    SCR_WDTH = 1920;    //!< Width of the image generated
 const int    SCR_HGHT = 1080;    //!< Height of the image generated
 const int    SCR_CD   = 32;      //!< Bits of Color Depth of the screen
-const int    FRAMES   = 4000;    //!< Total Number of frames to calculate
+const int    FRAMES   = 40000;    //!< Total Number of frames to calculate
 const int    MAX_ITER = 256;     //!< Maximum number of iter for mandelbrot
 double       XMIN     = -1.438;
 double       XMAX     = -1.400;
 double       YMIN     = -(DX * ((double)SCR_HGHT/SCR_WDTH));
 double       YMAX     = -YMIN;
-double       ITER_SCL = .99999999999;
+double       ITER_SCL = .0001;
 
 CImg<uint8_t> img(SCR_WDTH, SCR_HGHT, 1, 3);
 
@@ -117,18 +117,18 @@ int main(){
         for(x = 0; x < SCR_WDTH; x++){
             pthread_join(threads[x], NULL);
         }
-        printf("(%6d)s=%.5f  (%.5f, %.5f)-(%.5f, %.5f)  (%.5f)(%.5f)\n",
+        printf("(%010d)s=%.5f  (%.5f, %.5f)-(%.5f, %.5f)  (%.5f)(%.5f)\n",
                i, scale, XMIN, YMIN, XMAX, YMAX,
                XMAX - XMIN, YMAX - YMIN);
         //ITER_SCL *= ITER_SCL;
-        scale = ((DX*ITER_SCL) / 16.0);
+        scale = ((DX*ITER_SCL) / 64.0);
         XMIN = XMIN + scale;
         XMAX = XMAX - scale;
         YMIN = -(DX * ((double)SCR_HGHT/SCR_WDTH));
         YMAX = -YMIN;
         // Save the image for compositing later
         char fname[50];
-        snprintf(fname, 50, "out/frame%03d.jpg", i);
+        snprintf(fname, 50, "out/frame%010d.jpg", i);
         img.save_other(fname);
     }
 }

@@ -20,7 +20,7 @@ double       XMIN     = -1.438;
 double       XMAX     = -1.400;
 double       YMIN     = -(DX * ((double)SCR_HGHT/SCR_WDTH));
 double       YMAX     = -YMIN;
-double       ITER_SCL = .0005;
+double       ITER_SCL = .001;
 
 CImg<uint8_t> img(SCR_WDTH, SCR_HGHT, 1, 3);
 

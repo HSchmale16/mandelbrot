@@ -3,7 +3,7 @@
 # Henry Schmale
 # April 23, 2015
 
-final_name=video.mp4
+final_name=video.avi
 frat_glob=out/frame%010d.jpg
 
 # $1 - file glob pattern

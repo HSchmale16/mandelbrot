@@ -8,19 +8,20 @@
 
 using namespace cimg_library;
 
-#define DX (XMAX-XMIN)
+#define DX (XMAX-XMIN)   //!< delta between XMAX and XMIN
 #define DY (YMAX-YMIN)
 
 const int    SCR_WDTH = 1920;    //!< Width of the image generated
 const int    SCR_HGHT = 1080;    //!< Height of the image generated
 const int    SCR_CD   = 32;      //!< Bits of Color Depth of the screen
-const int    FRAMES   = 40000;    //!< Total Number of frames to calculate
+const int    FRAMES   = 40000;   //!< Total Number of frames to calculate
 const int    MAX_ITER = 256;     //!< Maximum number of iter for mandelbrot
+const double YOFFSET  = 1E-23;   //!< Y-axis offset
 double       XMIN     = -1.438;
 double       XMAX     = -1.400;
-double       YMIN     = -(DX * ((double)SCR_HGHT/SCR_WDTH));
-double       YMAX     = -YMIN;
-double       ITER_SCL = .001;
+double       YMIN     = -(DX * ((double)SCR_HGHT/SCR_WDTH)) + YOFFSET;
+double       YMAX     = -YMIN + YOFFSET;
+double       ITER_SCL = .01;
 
 CImg<uint8_t> img(SCR_WDTH, SCR_HGHT, 1, 3);
 
@@ -99,7 +100,7 @@ int main(){
     static pthread_t   threads[SCR_WDTH];
     static thread_data data[SCR_WDTH];
     int rc, x;
-    double scale;
+    double xscale, yscale;
 
     generateColorTable();
     printf("Images are %dpx by %dpx\n", SCR_WDTH, SCR_HGHT);
@@ -117,15 +118,15 @@ int main(){
         for(x = 0; x < SCR_WDTH; x++){
             pthread_join(threads[x], NULL);
         }
-        printf("(%010d) s=%.5f  (%.5f, %.5f)-(%.5f, %.5f)  (%.5f)(%.5f)\n",
-               i, scale, XMIN, YMIN, XMAX, YMAX,
-               XMAX - XMIN, YMAX - YMIN);
+        printf("(%010d) (%.5f, %.5f)-(%.5f, %.5f)  (%.5f)(%.5f)\n",
+               i, XMIN, YMIN, XMAX, YMAX, DX, DY);
         //ITER_SCL *= ITER_SCL;
-        scale = ((DX*ITER_SCL));
-        XMIN = XMIN + scale;
-        XMAX = XMAX - scale;
-        YMIN = -(DX * ((double)SCR_HGHT/SCR_WDTH));
-        YMAX = -YMIN;
+        xscale = ((DX*ITER_SCL));
+        yscale = ((DY*ITER_SCL));
+        XMIN = XMIN + xscale;
+        XMAX = XMAX - xscale;
+        YMIN = YMIN + yscale;
+        YMAX = YMAX - yscale;
         // Save the image for compositing later
         char fname[50];
         snprintf(fname, 50, "out/frame%010d.jpg", i);
